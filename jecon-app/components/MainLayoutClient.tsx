@@ -44,6 +44,7 @@ const MENU_SECTIONS = [
       { href: '/dashboard', icon: '🏠', label: '대시보드' },
       { href: '/daily', icon: '📋', label: '공사일보' },
       { href: '/workers', icon: '👷', label: '근로자·출역' },
+      { href: '/gantt', icon: '📅', label: '공정표 (간트차트)' },
     ],
   },
   {
@@ -52,6 +53,11 @@ const MENU_SECTIONS = [
       { href: '/safety', icon: '🦺', label: 'TBM 안전교육' },
       { href: '/risk', icon: '⚠️', label: '위험성 평가서' },
       { href: '/issues', icon: '🚨', label: '안전/하자 이슈' },
+      { href: '/accident', icon: '🚑', label: '사고 즉시 보고서' },
+      { href: '/work-stop', icon: '⛔', label: '작업중지 기록' },
+      { href: '/inspection', icon: '🔧', label: '장비 점검일지' },
+      { href: '/safety-ledger', icon: '📒', label: '안전보건대장' },
+      { href: '/safety-cost', icon: '🛡️', label: '안전관리비 집행' },
     ],
   },
   {
@@ -60,6 +66,8 @@ const MENU_SECTIONS = [
       { href: '/cost', icon: '💰', label: '노무비 계산' },
       { href: '/payroll', icon: '📊', label: '노무비 집계표' },
       { href: '/invoice', icon: '📄', label: '청구 내역서' },
+      { href: '/contracts', icon: '✍️', label: '근로계약서' },
+      { href: '/visa', icon: '🌍', label: '외국인 비자 관리' },
     ],
   },
   {
@@ -68,6 +76,7 @@ const MENU_SECTIONS = [
       { href: '/photos', icon: '📷', label: '현장사진' },
       { href: '/equipment', icon: '🏗️', label: '장비 관리' },
       { href: '/materials', icon: '🧱', label: '자재 수불부' },
+      { href: '/subcontractors', icon: '🏢', label: '하도급 업체 관리' },
       { href: '/sites', icon: '📍', label: '현장 관리' },
     ],
   },
