@@ -80,6 +80,13 @@ const MENU_SECTIONS = [
       { href: '/sites', icon: '📍', label: '현장 관리' },
     ],
   },
+  {
+    label: '리포트·공유',
+    items: [
+      { href: '/report', icon: '📊', label: '월별 결산 리포트' },
+      { href: '/share-settings', icon: '📤', label: '발주처 공유 링크' },
+    ],
+  },
 ]
 
 // ── Calendar Modal ────────────────────────────────────────────
