@@ -191,6 +191,7 @@ export interface StockRecord {
 }
 
 export interface InsuranceResult {
+  gross: number
   pension: number
   health: number
   ltcare: number
@@ -199,6 +200,7 @@ export interface InsuranceResult {
   local: number
   total: number
   net: number
+  accident: number
 }
 
 export interface DashboardStats {

@@ -23,9 +23,10 @@ export function calcInsurance(
   }
 
   const local = Math.round(income * 0.1)             // 지방소득세 10%
+  const accident = Math.round(gross * 0.017)         // 산재보험 1.7% (사업주 부담)
   const total = pension + health + ltcare + employ + income + local
 
-  return { pension, health, ltcare, employ, income, local, total, net: gross - total }
+  return { gross, pension, health, ltcare, employ, income, local, total, net: gross - total, accident }
 }
 
 function calcIncomeTax(monthly: number): number {
