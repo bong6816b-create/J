@@ -15,7 +15,8 @@ export default function RiskPage() {
   const [toast, setToast] = useState('')
   const [toastType, setToastType] = useState<'ok' | 'warn' | ''>('')
 
-  const riskData = workType ? RISK_DB[Object.keys(RISK_DB).find(k => workType.includes(k)) ?? ''] : null
+  const matchedKey = workType ? Object.keys(RISK_DB).find(k => workType.includes(k)) : undefined
+  const riskData = matchedKey ? RISK_DB[matchedKey] : null
 
   async function saveAssessment() {
     if (!selectedSite || !workType) { showToast('공종을 선택하세요', 'warn'); return }

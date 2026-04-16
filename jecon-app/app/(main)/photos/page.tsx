@@ -41,7 +41,7 @@ export default function PhotosPage() {
         const { data: rec } = await supabase.from('site_photos').insert({
           site_id: selectedSite.id,
           photo_url: url.publicUrl,
-          taken_at: new Date().toISOString(),
+          taken_at: `${selectedDate}T09:00:00.000Z`,
         }).select().single()
         if (rec) setPhotos(prev => [rec, ...prev])
       }

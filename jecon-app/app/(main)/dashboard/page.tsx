@@ -60,7 +60,7 @@ export default function DashboardPage() {
       .from('safety_issues')
       .select('*', { count: 'exact', head: true })
       .eq('site_id', selectedSite.id)
-      .neq('status', 'resolved')
+      .neq('status', '완료')
 
     setStats({
       todayWorkers: attCount ?? 0,
