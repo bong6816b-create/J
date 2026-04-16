@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Vercel 배포 최적화
-  output: 'standalone',
-
   // 이미지 최적화 (Supabase Storage 도메인 허용)
   images: {
     remotePatterns: [
