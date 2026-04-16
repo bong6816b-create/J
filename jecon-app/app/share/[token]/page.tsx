@@ -1,12 +1,12 @@
-import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
-import { format, differenceInDays, parseISO } from 'date-fns'
+import { format, differenceInDays, parseISO, startOfMonth } from 'date-fns'
 import { ko } from 'date-fns/locale'
 
 export const dynamic = 'force-dynamic'
 
 export default async function SharePage({ params }: { params: { token: string } }) {
-  const supabase = await createClient()
+  const supabase = createServiceClient()
 
   // Find site by share_token
   const { data: site } = await supabase
@@ -29,7 +29,7 @@ export default async function SharePage({ params }: { params: { token: string } 
     supabase.from('gantt_items').select('*').eq('site_id', site.id).order('start_date'),
     supabase.from('site_photos').select('*').eq('site_id', site.id).order('taken_at', { ascending: false }).limit(12),
     supabase.from('safety_issues').select('*').eq('site_id', site.id).eq('status', '처리중').limit(5),
-    supabase.from('attendances').select('worker_id').eq('site_id', site.id).gte('att_date', format(new Date(), 'yyyy-MM-01')),
+    supabase.from('attendances').select('worker_id').eq('site_id', site.id).gte('att_date', format(startOfMonth(new Date()), 'yyyy-MM-dd')),
   ])
 
   const today = format(new Date(), 'yyyy-MM-dd')

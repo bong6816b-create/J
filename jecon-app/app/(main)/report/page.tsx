@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useApp } from '@/components/MainLayoutClient'
 import { createClient } from '@/lib/supabase/client'
-import { format, startOfMonth, endOfMonth, parseISO, eachDayOfInterval } from 'date-fns'
+import { format, endOfMonth, parseISO, eachDayOfInterval } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { calcInsurance } from '@/lib/utils/insurance'
 
@@ -64,7 +64,7 @@ export default function ReportPage() {
     (attendances ?? []).forEach(a => {
       const rate = (a.worker as any)?.daily_rate ?? workerMap.get(a.worker_id) ?? 0
       const gross = rate * (a.days ?? 1)
-      const ins = calcInsurance(gross, false)
+      const ins = calcInsurance(gross, 'daily')
       totalWage += ins.gross
       totalDeduction += ins.total
     })

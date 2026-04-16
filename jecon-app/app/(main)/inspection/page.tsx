@@ -34,9 +34,6 @@ export default function InspectionPage() {
 
   async function loadLogs() {
     if (!selectedSite) return
-    const { data } = await supabase.from('equipment_usage').select('*')
-      .eq('log_id', 'inspection')  // We'll store using notes field differently
-    // Actually use stock_records with name prefix 'inspection:'
     const { data: recs } = await supabase.from('stock_records').select('*')
       .eq('site_id', selectedSite.id)
       .like('name', '장비점검:%')
