@@ -16,6 +16,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <style>
 :root{
   --br:#2C1810;--br2:#3D2314;--cara:#7B4A2D;--latte:#B07A5A;
@@ -105,6 +106,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
 .panel{display:none;padding:12px 12px 20px}
 .panel.on{display:block;animation:rise .22s ease}
 @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media print{*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}}
 
 /* ── CALENDAR MODAL ── */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:90;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
@@ -520,6 +522,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
         <div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--g1);font-size:10px;color:var(--tx3);display:flex;justify-content:space-between">
           <span>현장소장 서명: ___________</span><span>제이건설 자동생성</span>
         </div>
+        <button onclick="printDoc('작업일보',g('pdf-out').innerHTML)" style="width:100%;margin-top:10px;padding:11px;background:var(--br);color:var(--cream);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">🖨️ 인쇄 / PDF 저장</button>
       </div>
     </div>
 
@@ -763,8 +766,8 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
       </div>
     </div>
     <div class="btn-row">
-      <button class="btn btn-main" onclick="toast('📄 집계표 PDF 출력!','ok')">📄 PDF 출력</button>
-      <button class="btn btn-ghost" onclick="toast('📊 엑셀 다운로드!','ok')">📊 엑셀</button>
+      <button class="btn btn-main" onclick="printPayrollPDF()">📄 PDF 출력</button>
+      <button class="btn btn-ghost" onclick="exportPayrollExcel()">📊 엑셀</button>
     </div>
   </div>
 
@@ -1085,6 +1088,9 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
     <div class="card">
       <div class="card-t">수불 내역</div>
       <div id="stock-list"><div class="empty-state"><div class="ei">🧱</div>자재를 등록해주세요</div></div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn btn-ghost" onclick="exportStockExcel()">📊 엑셀 다운로드</button>
+      </div>
     </div>
   </div>
 
@@ -1192,7 +1198,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
       <div class="cline"><span class="clbl">안전관리자</span><input class="cval-in" style="font-size:12px" id="sb-safety" placeholder="홍길동"></div>
       <div class="cline"><span class="clbl">보건관리자</span><input class="cval-in" style="font-size:12px" id="sb-health" placeholder="미선임 또는 외부위탁"></div>
     </div>
-    <button class="btn btn-main" onclick="toast('📄 안전보건대장 PDF 생성!','ok')" style="margin-bottom:8px">📄 안전보건대장 출력</button>
+    <button class="btn btn-main" onclick="printSafetyBookPDF()" style="margin-bottom:8px">📄 안전보건대장 출력</button>
     <button class="btn btn-ghost" onclick="toast('💾 저장 완료','ok')">💾 저장</button>
   </div>
 
@@ -1603,7 +1609,13 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
     <div class="sm-item" onclick="closeMenu();goPanel('work-type');renderWorkTypes()"><span class="sm-icon">🔧</span>공종 관리</div>
     <div class="sm-item" onclick="closeMenu();goPanel('job-type');renderJobTypes()"><span class="sm-icon">💼</span>직종 관리</div>
   </div>
+  <div class="sm-sec">
+    <div class="sm-lbl">데이터</div>
+    <div class="sm-item" onclick="closeMenu();backupData()"><span class="sm-icon">💾</span>전체 데이터 백업</div>
+    <div class="sm-item" onclick="closeMenu();g('restore-input').click()"><span class="sm-icon">📥</span>백업 파일 복원</div>
+  </div>
 </div>
+<input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(this)">
 
 <!-- CALENDAR MODAL -->
 <div class="modal-bg" id="cal-modal">
@@ -1767,17 +1779,28 @@ function sv2(id,v){const e=g(id);if(e)e.value=v}
 // ═══════════════════════════════════════
 //  WEATHER (GPS + OpenWeatherMap)
 // ═══════════════════════════════════════
-const OWM='bd5e378503939ddaee76f12ad7a97608';
 function loadWeather(){
   if(!navigator.geolocation){simW();return}
   navigator.geolocation.getCurrentPosition(async p=>{
     try{
-      const r=await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${p.coords.latitude}&lon=${p.coords.longitude}&appid=${OWM}&units=metric&lang=kr`);
+      const lat=p.coords.latitude.toFixed(4),lon=p.coords.longitude.toFixed(4);
+      const r=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=relativehumidity_2m&timezone=auto&forecast_days=1`);
       const d=await r.json();
-      if(d.cod!==200)throw'';
-      applyW(Math.round(d.main.temp),d.weather[0].description,d.main.humidity,d.wind.speed.toFixed(1),d.name,wIco(d.weather[0].id));
+      const cw=d.current_weather;
+      const humidity=d.hourly?.relativehumidity_2m?.[new Date().getHours()]??55;
+      const wind=cw.windspeed.toFixed(1);
+      const {desc,ico}=wmoDesc(cw.weathercode,cw.is_day);
+      applyW(Math.round(cw.temperature),desc,humidity,wind,'',ico);
     }catch{simW()}
   },simW);
+}
+function wmoDesc(code,isDay){
+  const d={0:{d:'맑음',i:'☀️'},1:{d:'대체로 맑음',i:'🌤️'},2:{d:'구름 조금',i:'⛅'},3:{d:'흐림',i:'☁️'},
+    45:{d:'안개',i:'🌫️'},48:{d:'안개',i:'🌫️'},51:{d:'이슬비',i:'🌦️'},53:{d:'이슬비',i:'🌦️'},55:{d:'이슬비',i:'🌧️'},
+    61:{d:'비',i:'🌧️'},63:{d:'비',i:'🌧️'},65:{d:'강한 비',i:'🌧️'},71:{d:'눈',i:'❄️'},73:{d:'눈',i:'❄️'},75:{d:'폭설',i:'🌨️'},
+    80:{d:'소나기',i:'🌦️'},81:{d:'소나기',i:'🌦️'},82:{d:'강한 소나기',i:'⛈️'},95:{d:'뇌우',i:'⛈️'},96:{d:'우박',i:'⛈️'},99:{d:'우박',i:'⛈️'}};
+  const r=d[code]||{d:'알 수 없음',i:'🌡️'};
+  return {desc:r.d,ico:(!isDay&&code===0)?'🌙':r.i};
 }
 function applyW(t,desc,h,w,city,ico){
   g('w-icon').textContent=ico; g('w-temp').textContent=t+'°C';
@@ -1786,8 +1809,7 @@ function applyW(t,desc,h,w,city,ico){
   g('w-pill').textContent=ico+' '+t+'°C';
   sv2('d-weather',ico+' '+desc+' '+t+'°C');
 }
-function simW(){applyW(24,'맑음',55,'3.2','서울(추정)','☀️')}
-function wIco(id){if(id<300)return'⛈️';if(id<500)return'🌦️';if(id<600)return'🌧️';if(id<700)return'❄️';if(id<800)return'🌫️';if(id===800)return'☀️';if(id<803)return'🌤️';return'☁️'}
+function simW(){applyW(24,'맑음',55,'3.2','','☀️')}
 
 // ═══════════════════════════════════════
 //  RISK ENGINE
@@ -2191,7 +2213,7 @@ function genPDF(){
     <div style="font-size:11px;padding:5px 7px;background:#FFF8EE;border-radius:5px">${note}</div>`;
   const p=g('pdf-out');p.style.display='block';
   p.scrollIntoView({behavior:'smooth',block:'start'});
-  toast('📄 작업일보 PDF 생성!','ok');
+  toast('📄 미리보기 생성! 하단 "인쇄/PDF저장" 버튼을 누르세요','ok');
 }
 function sendEmail(){
   const email=sv('d-email');
@@ -2248,9 +2270,13 @@ function renderETbl(){
 //  PHOTOS
 // ═══════════════════════════════════════
 function addPhotos(input){
-  Array.from(input.files).forEach(f=>{
+  if(S.photos.length>=10){toast('현장사진은 최대 10장까지 가능합니다','warn');return}
+  Array.from(input.files).slice(0,10-S.photos.length).forEach(f=>{
     const r=new FileReader();
-    r.onload=e=>{S.photos.push(e.target.result);renderPhotos()};
+    r.onload=async e=>{
+      const compressed=await compressImage(e.target.result);
+      S.photos.push(compressed);renderPhotos();
+    };
     r.readAsDataURL(f);
   });
 }
@@ -3060,12 +3086,14 @@ function getGpsAndPhoto(){
   },()=>g('gp-input').click());
 }
 function addGpsPhoto(input){
-  const files=Array.from(input.files);
-  files.forEach(f=>{
+  if(gpsPhotos.length>=30){toast('GPS 사진은 최대 30장입니다. 오래된 사진을 삭제해주세요','warn');return}
+  Array.from(input.files).slice(0,30-gpsPhotos.length).forEach(f=>{
     const r=new FileReader();
-    r.onload=e=>{
-      gpsPhotos.unshift({id:Date.now(),src:e.target.result,work:sv('gp-work'),loc:sv('gp-loc'),lat:currentGpsCoords.lat,lng:currentGpsCoords.lng,date:toISO(new Date())});
-      localStorage.setItem('jc-gps',JSON.stringify(gpsPhotos.slice(0,50)));// 최대 50장
+    r.onload=async e=>{
+      const compressed=await compressImage(e.target.result,1200,0.75);
+      gpsPhotos.unshift({id:Date.now(),src:compressed,work:sv('gp-work'),loc:sv('gp-loc'),lat:currentGpsCoords.lat,lng:currentGpsCoords.lng,date:toISO(new Date())});
+      try{localStorage.setItem('jc-gps',JSON.stringify(gpsPhotos.slice(0,30)));}
+      catch(e){toast('저장 공간 부족. 오래된 GPS 사진을 삭제해주세요','warn');}
       renderGpsPhotos();
     };
     r.readAsDataURL(f);
@@ -3521,6 +3549,197 @@ function renderApprovals(){
       <button onclick="approvals=approvals.filter(x=>x.id!==${a.id});localStorage.setItem('jc-approvals',JSON.stringify(approvals));renderApprovals()" style="background:none;border:none;color:var(--g3);cursor:pointer;padding:7px">🗑️</button>
     </div>`:`<div style="font-size:10px;color:var(--tx3)">처리일: ${a.processedAt?.split('T')[0]||'-'}</div>`}
   </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+//  공통 인쇄 유틸리티
+// ═══════════════════════════════════════
+function printDoc(title, bodyHtml) {
+  const win = window.open('', '_blank', 'width=800,height=900');
+  if (!win) { toast('팝업이 차단되었습니다. 허용 후 다시 시도하세요', 'warn'); return; }
+  win.document.write(`<!DOCTYPE html><html lang="ko"><head>
+<meta charset="UTF-8"><title>${title} - 제이건설</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Noto Sans KR',sans-serif;padding:20px;font-size:11px;color:#1E0F07;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  table{width:100%;border-collapse:collapse}th,td{border:1px solid #ccc;padding:5px 6px;font-size:10px}
+  th{background:#2C1810;color:#fff;font-weight:700}
+  tr:nth-child(even){background:#FFF8EE}
+  .no-print{display:none}
+  @page{size:A4;margin:15mm 12mm}
+  @media print{.no-print{display:none!important}}
+</style>
+</head><body>
+${bodyHtml}
+<div class="no-print" style="text-align:center;margin-top:24px">
+  <button onclick="window.print()" style="padding:12px 32px;background:#2C1810;color:#FFF8EE;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer">🖨️ 인쇄 / PDF로 저장</button>
+</div>
+</body></html>`);
+  win.document.close();
+}
+
+// ═══════════════════════════════════════
+//  노무비 집계표 PDF
+// ═══════════════════════════════════════
+function printPayrollPDF() {
+  const site = sv('d-site') || '미입력';
+  const date = new Date().toLocaleDateString('ko-KR');
+  const workers = S.workers;
+  if (!workers.length) { toast('등록된 근로자가 없습니다', 'warn'); return; }
+  const total = workers.reduce((s, w) => s + w.rate * w.days, 0);
+  const rows = workers.map((w, i) => `<tr style="${i%2===0?'background:#FFF8EE':''}">
+    <td style="padding:5px 6px">${w.name}</td>
+    <td style="text-align:center">${w.role}</td>
+    <td style="text-align:center">${w.days}일</td>
+    <td style="text-align:right;font-family:monospace">₩${w.rate.toLocaleString()}</td>
+    <td style="text-align:right;font-family:monospace;font-weight:700">₩${(w.rate*w.days).toLocaleString()}</td>
+  </tr>`).join('');
+  const html = `
+    <div style="text-align:center;border-bottom:3px solid #2C1810;padding-bottom:10px;margin-bottom:14px">
+      <div style="font-size:20px;font-weight:900;color:#2C1810;letter-spacing:3px">노 무 비 집 계 표</div>
+      <div style="font-size:11px;color:#8C7060;margin-top:4px">현장: ${site} · 출력일: ${date}</div>
+    </div>
+    <table>
+      <thead><tr><th>성명</th><th>직종</th><th>공수</th><th>일당</th><th>지급액</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr style="background:#2C1810;color:#fff">
+        <td colspan="4" style="padding:6px;font-weight:700;text-align:right">합 계</td>
+        <td style="padding:6px;text-align:right;font-family:monospace;font-weight:700">₩${total.toLocaleString()}</td>
+      </tr></tfoot>
+    </table>
+    <div style="margin-top:16px;font-size:10px;color:#8C7060;text-align:right">현장소장 서명: _______________ (인)</div>`;
+  printDoc('노무비 집계표', html);
+}
+
+// ═══════════════════════════════════════
+//  안전보건대장 PDF
+// ═══════════════════════════════════════
+function printSafetyBookPDF() {
+  const site = sv('d-site') || sv('sb-chief') ? (sv('d-site')||'미입력') : '미입력';
+  const chief = sv('sb-chief') || '미입력';
+  const safety = sv('sb-safety') || '미입력';
+  const health = sv('sb-health') || '미입력';
+  const date = new Date().toLocaleDateString('ko-KR');
+  const checks = JSON.parse(localStorage.getItem('jc-comp') || '[]');
+  const checkRows = [
+    '안전보건관리규정 게시', '안전보건교육 실시', '위험성 평가 시행', '안전작업허가서 발급',
+    '작업 전 TBM 실시', '보호구 지급 및 착용 확인', '안전표지판 설치', '비상연락망 게시',
+    '응급처치 장비 비치', '화재예방 조치'
+  ].map((item, i) => {
+    const done = checks.includes(i);
+    return `<tr><td style="padding:5px">${item}</td><td style="text-align:center;color:${done?'#2E7D52':'#E63B2E'}">${done?'✓ 완료':'✗ 미완료'}</td></tr>`;
+  }).join('');
+  const html = `
+    <div style="text-align:center;border-bottom:3px solid #2C1810;padding-bottom:10px;margin-bottom:14px">
+      <div style="font-size:18px;font-weight:900;color:#2C1810;letter-spacing:2px">안 전 보 건 대 장</div>
+      <div style="font-size:11px;color:#8C7060;margin-top:4px">현장: ${site} · 출력일: ${date}</div>
+    </div>
+    <div style="margin-bottom:14px">
+      <table><thead><tr><th>구분</th><th>담당자</th></tr></thead>
+      <tbody>
+        <tr><td>안전보건총괄책임자</td><td>${chief}</td></tr>
+        <tr><td>안전관리자</td><td>${safety}</td></tr>
+        <tr><td>보건관리자</td><td>${health}</td></tr>
+      </tbody></table>
+    </div>
+    <div style="font-size:12px;font-weight:700;color:#2C1810;margin-bottom:6px">▶ 안전 점검 체크리스트</div>
+    <table><thead><tr><th>항목</th><th>이행 여부</th></tr></thead>
+    <tbody>${checkRows}</tbody></table>
+    <div style="margin-top:16px;font-size:10px;color:#8C7060;text-align:right">안전관리자 서명: _______________ (인)</div>`;
+  printDoc('안전보건대장', html);
+}
+
+// ═══════════════════════════════════════
+//  엑셀 내보내기 (SheetJS)
+// ═══════════════════════════════════════
+function exportPayrollExcel() {
+  if (!window.XLSX) { toast('SheetJS 로딩 중입니다. 잠시 후 다시 시도하세요', 'warn'); return; }
+  const workers = S.workers;
+  if (!workers.length) { toast('등록된 근로자가 없습니다', 'warn'); return; }
+  const headers = ['성명', '직종', '국적', '공수(일)', '일당(원)', '지급액(원)'];
+  const rows = workers.map(w => [w.name, w.role, w.lang||'내국인', w.days, w.rate, w.rate*w.days]);
+  const total = workers.reduce((s, w) => s + w.rate * w.days, 0);
+  rows.push(['합계', '', '', '', '', total]);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [12,12,8,8,12,12].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '노무비 집계');
+  XLSX.writeFile(wb, `노무비_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('📊 엑셀 다운로드 완료!', 'ok');
+}
+
+function exportStockExcel() {
+  if (!window.XLSX) { toast('SheetJS 로딩 중입니다. 잠시 후 다시 시도하세요', 'warn'); return; }
+  const items = JSON.parse(localStorage.getItem('jc-stock') || '[]');
+  if (!items.length) { toast('자재 데이터가 없습니다', 'warn'); return; }
+  const headers = ['날짜', '자재명', '구분', '수량', '단위', '단가(원)', '금액(원)', '비고'];
+  const rows = items.map(s => [s.date, s.name, s.type==='in'?'입고':'출고', s.qty, s.unit, s.price, s.qty*s.price, s.note||'']);
+  const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+  ws['!cols'] = [12,14,6,6,5,12,12,16].map(w=>({wch:w}));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, '자재 수불부');
+  XLSX.writeFile(wb, `자재수불부_${new Date().toISOString().split('T')[0]}.xlsx`);
+  toast('📊 엑셀 다운로드 완료!', 'ok');
+}
+
+// ═══════════════════════════════════════
+//  데이터 백업 / 복원
+// ═══════════════════════════════════════
+function backupData() {
+  const backup = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key.startsWith('jc-')) backup[key] = localStorage.getItem(key);
+  }
+  if (!Object.keys(backup).length) { toast('백업할 데이터가 없습니다', 'warn'); return; }
+  const json = JSON.stringify({version:1, date:new Date().toISOString(), data:backup}, null, 2);
+  const a = document.createElement('a');
+  a.href = 'data:application/json;charset=utf-8,' + encodeURIComponent(json);
+  a.download = `제이건설_백업_${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  toast(`💾 백업 완료! (${Object.keys(backup).length}개 항목)`, 'ok');
+}
+
+function restoreData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const obj = JSON.parse(e.target.result);
+      const data = obj.data || obj;
+      let count = 0;
+      Object.entries(data).forEach(([key, val]) => {
+        if (key.startsWith('jc-')) { localStorage.setItem(key, val); count++; }
+      });
+      input.value = '';
+      toast(`✅ 복원 완료! (${count}개 항목) 앱을 새로고침합니다`, 'ok');
+      setTimeout(() => location.reload(), 1500);
+    } catch {
+      toast('❌ 잘못된 백업 파일입니다', 'warn');
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ═══════════════════════════════════════
+//  이미지 압축 (사진 용량 절감)
+// ═══════════════════════════════════════
+function compressImage(dataUrl, maxPx=900, quality=0.72) {
+  return new Promise(res => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      res(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
 }
 
 init();
