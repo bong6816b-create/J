@@ -744,7 +744,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
       <div class="cline"><span class="clbl">산재보험 (1.7%)</span><span style="font-family:monospace;font-size:12px;color:var(--caramel,#7B4A2D)" id="emp-accident">₩0</span></div>
       <div class="cline" style="border:none"><span class="clbl font-weight:700">총 사업주 부담</span><span style="font-family:monospace;font-size:13px;font-weight:700;color:var(--caramel,#7B4A2D)" id="emp-total">₩0</span></div>
     </div>
-    <button class="btn btn-main" onclick="toast('📄 공제내역서 생성 완료!','ok')">📄 공제내역서 출력</button>
+    <button class="btn btn-main" onclick="printDeductionPDF()">📄 공제내역서 출력</button>
   </div>
 
   <!-- ══ 노무비 집계표 ══ -->
@@ -804,7 +804,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
       <div id="inv-body"><div class="empty-state"><div class="ei">📄</div>청구 정보를 입력하면 자동 생성됩니다</div></div>
     </div>
     <button class="btn btn-main" onclick="genInvoice()" style="margin-bottom:8px">📄 청구서 생성</button>
-    <button class="btn btn-ghost" onclick="toast('📧 발주처 발송 완료!','ok')">📧 발주처 이메일 발송</button>
+    <button class="btn btn-ghost" onclick="printDoc('노무비청구내역서',g('inv-preview').innerHTML)">🖨️ 인쇄 / PDF 저장</button>
   </div>
 
   <!-- ══ 안전/하자 이슈 관리 ══ -->
@@ -881,7 +881,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
         <span style="font-size:12px;font-weight:700;color:var(--cream)">이번주 노무비 합계</span>
         <span style="font-family:var(--bebas);font-size:20px;color:var(--gold)" id="pay-total">₩0</span>
       </div>
-      <button class="btn btn-gold btn-sm" onclick="toast('💳 이체 명세서 생성!','ok')" style="margin-top:10px;width:100%">💳 이체 명세서 자동 생성</button>
+      <button class="btn btn-gold btn-sm" onclick="printTransferPDF()" style="margin-top:10px;width:100%">💳 이체 명세서 자동 생성</button>
     </div>
     <div class="card">
       <div class="card-t">공사 원가 입력 (직접 수정)</div>
@@ -1023,6 +1023,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
     <button class="btn btn-main" onclick="genBilling()" style="margin-bottom:8px">📄 기성청구서 생성</button>
     <div id="bl-preview" style="display:none;background:#fff;border-radius:12px;border:1px solid var(--cream3);padding:16px;margin-bottom:10px">
       <div id="bl-body"></div>
+      <button onclick="printDoc('기성청구서',g('bl-body').innerHTML)" style="width:100%;margin-top:10px;padding:11px;background:var(--br);color:var(--cream);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">🖨️ 인쇄 / PDF 저장</button>
     </div>
   </div>
 
@@ -1149,7 +1150,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
         <span style="font-size:12px;font-weight:700;color:var(--cream)">이번주 노무비 합계</span>
         <span style="font-family:var(--bebas);font-size:20px;color:var(--gold)" id="pay-total">₩0</span>
       </div>
-      <button class="btn btn-gold btn-sm" onclick="toast('💳 이체 명세서 생성!','ok')" style="margin-top:10px;width:100%">💳 이체 명세서 자동 생성</button>
+      <button class="btn btn-gold btn-sm" onclick="printTransferPDF()" style="margin-top:10px;width:100%">💳 이체 명세서 자동 생성</button>
     </div>
     <div class="card">
       <div class="card-t">공사 원가 입력 (직접 수정)</div>
@@ -1474,6 +1475,7 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
     </div>
     <div id="mr-preview" style="display:none;background:#fff;border-radius:12px;border:1px solid var(--cream3);padding:16px;margin-bottom:10px">
       <div id="mr-body"></div>
+      <button onclick="printDoc('월별결산리포트',g('mr-body').innerHTML)" style="width:100%;margin-top:10px;padding:11px;background:var(--br);color:var(--cream);border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">🖨️ 인쇄 / PDF 저장</button>
     </div>
   </div>
 
@@ -2502,7 +2504,7 @@ function renderPersonal(id){
       <div><div style="font-size:11px;color:rgba(255,248,238,.7)">실수령액</div><div style="font-family:var(--bebas);font-size:28px;color:var(--gold)">${fmt(net)}</div></div>
       <div style="text-align:right"><div style="font-size:10px;color:rgba(255,248,238,.6)">TBM 서명</div><div style="font-size:14px;font-weight:700;color:${w.signed?'#4ADE80':'var(--red)'}">${w.signed?'✓ 완료':'미서명'}</div></div>
     </div>
-    <button class="btn btn-main" onclick="toast('📄 개인 노무비 명세서 출력!','ok')" style="margin-top:10px">📄 개인 명세서 출력</button>`;
+    <button class="btn btn-main" onclick="printDoc('개인노무비명세서',g('per-detail').innerHTML)" style="margin-top:10px">📄 개인 명세서 출력</button>`;
 }
 
 // ═══════════════════════════════════════
@@ -3014,7 +3016,8 @@ function genShareLink(){
   const site=S.sites.find(s=>s.id===+siteId);
   if(!site){toast('현장을 선택하세요','warn');return}
   const token=btoa(encodeURIComponent(site.name+'-'+Date.now())).substr(0,16);
-  const url=`https://jecon.app/share/${token}`;
+  const base=location.hostname==='localhost'?location.origin:'https://bong6816b-create.github.io/J';
+  const url=`${base}?share=${token}`;
   g('sh-link-txt').textContent=url;
   g('sh-link-box').style.display='block';
   renderSharePreview();toast('🔗 공유 링크 생성!','ok');
@@ -3549,6 +3552,92 @@ function renderApprovals(){
       <button onclick="approvals=approvals.filter(x=>x.id!==${a.id});localStorage.setItem('jc-approvals',JSON.stringify(approvals));renderApprovals()" style="background:none;border:none;color:var(--g3);cursor:pointer;padding:7px">🗑️</button>
     </div>`:`<div style="font-size:10px;color:var(--tx3)">처리일: ${a.processedAt?.split('T')[0]||'-'}</div>`}
   </div>`).join('');
+}
+
+// ═══════════════════════════════════════
+//  공제내역서 PDF
+// ═══════════════════════════════════════
+function printDeductionPDF() {
+  const gross = g('ded-gross')?.textContent || '₩0';
+  const net = g('ded-net')?.textContent || '₩0';
+  const rate = g('ded-rate')?.textContent || '0%';
+  const type = sv('ded-type') === 'monthly' ? '월급 (상용직)' : '일당 (일용직)';
+  const rows = [
+    ['국민연금 (4.5%)', g('ded-pension')?.textContent],
+    ['건강보험 (3.545%)', g('ded-health')?.textContent],
+    ['장기요양', g('ded-ltcare')?.textContent],
+    ['고용보험 (0.9%)', g('ded-employ')?.textContent],
+    ['소득세', g('ded-income')?.textContent],
+    ['지방소득세', g('ded-local')?.textContent],
+    ['총 공제액', g('ded-total')?.textContent],
+  ];
+  const empRows = [
+    ['국민연금 (4.5%)', g('emp-pension')?.textContent],
+    ['건강보험 (3.545%)', g('emp-health')?.textContent],
+    ['장기요양', g('emp-ltcare')?.textContent],
+    ['고용보험 (0.9%)', g('emp-employ')?.textContent],
+    ['산재보험 (1.7%)', g('emp-accident')?.textContent],
+    ['총 사업주 부담', g('emp-total')?.textContent],
+  ];
+  const html = `
+    <div style="text-align:center;border-bottom:3px solid #2C1810;padding-bottom:10px;margin-bottom:14px">
+      <div style="font-size:18px;font-weight:900;color:#2C1810;letter-spacing:2px">노 무 비 공 제 내 역 서</div>
+      <div style="font-size:11px;color:#8C7060;margin-top:4px">급여 유형: ${type} · 출력일: ${new Date().toLocaleDateString('ko-KR')}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:14px">
+      <thead><tr style="background:#2C1810;color:#fff"><th colspan="2" style="padding:6px">근로자 공제 내역</th></tr></thead>
+      <tbody>
+        <tr style="background:#FFF8EE"><td style="padding:6px;font-weight:700">총 지급액</td><td style="padding:6px;text-align:right;font-family:monospace;font-weight:700">${gross}</td></tr>
+        ${rows.map((r,i)=>`<tr style="${i%2===0?'':'background:#FFF8EE'}"><td style="padding:5px 6px;color:#E63B2E">${r[0]}</td><td style="padding:5px 6px;text-align:right;font-family:monospace;color:#E63B2E">${r[1]||'-'}</td></tr>`).join('')}
+        <tr style="background:#2C1810;color:#fff"><td style="padding:7px;font-weight:700">실 수령액</td><td style="padding:7px;text-align:right;font-family:monospace;font-weight:700">${net} (공제율 ${rate})</td></tr>
+      </tbody>
+    </table>
+    <table style="width:100%;border-collapse:collapse">
+      <thead><tr style="background:#5C3D28;color:#fff"><th colspan="2" style="padding:6px">사업주 부담 (참고)</th></tr></thead>
+      <tbody>${empRows.map((r,i)=>`<tr style="${i%2===0?'background:#FFF8EE':''}"><td style="padding:5px 6px">${r[0]}</td><td style="padding:5px 6px;text-align:right;font-family:monospace">${r[1]||'-'}</td></tr>`).join('')}</tbody>
+    </table>
+    <div style="margin-top:16px;font-size:10px;color:#8C7060;text-align:right">확인자 서명: _______________ (인)</div>`;
+  printDoc('공제내역서', html);
+}
+
+// ═══════════════════════════════════════
+//  이체 명세서 PDF
+// ═══════════════════════════════════════
+function printTransferPDF() {
+  const workers = S.workers;
+  if (!workers.length) { toast('등록된 근로자가 없습니다', 'warn'); return; }
+  const date = new Date().toLocaleDateString('ko-KR');
+  const total = workers.reduce((s, w) => s + w.rate * w.days, 0);
+  const rows = workers.map((w, i) => {
+    const gross = w.rate * w.days;
+    const ded = Math.round(gross * (0.045 + 0.03545 + 0.009));
+    const net = gross - ded;
+    return `<tr style="${i%2===0?'background:#FFF8EE':''}">
+      <td style="padding:5px 6px">${w.name}</td>
+      <td style="text-align:center">${w.role}</td>
+      <td style="text-align:center">${w.days}일</td>
+      <td style="text-align:right;font-family:monospace">₩${gross.toLocaleString()}</td>
+      <td style="text-align:right;font-family:monospace;color:#E63B2E">-₩${ded.toLocaleString()}</td>
+      <td style="text-align:right;font-family:monospace;font-weight:700">₩${net.toLocaleString()}</td>
+      <td style="text-align:center">계좌이체</td>
+    </tr>`;
+  }).join('');
+  const html = `
+    <div style="text-align:center;border-bottom:3px solid #2C1810;padding-bottom:10px;margin-bottom:14px">
+      <div style="font-size:18px;font-weight:900;color:#2C1810;letter-spacing:2px">노 무 비 이 체 명 세 서</div>
+      <div style="font-size:11px;color:#8C7060;margin-top:4px">이체일: ${date}</div>
+    </div>
+    <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
+      <thead><tr style="background:#2C1810;color:#fff"><th>성명</th><th>직종</th><th>일수</th><th>지급액</th><th>공제액</th><th>실지급</th><th>방법</th></tr></thead>
+      <tbody>${rows}</tbody>
+      <tfoot><tr style="background:#2C1810;color:#fff">
+        <td colspan="5" style="padding:6px;font-weight:700;text-align:right">합 계</td>
+        <td style="padding:6px;text-align:right;font-family:monospace;font-weight:700">₩${workers.reduce((s,w)=>{const g=w.rate*w.days;return s+g-Math.round(g*0.09045)},0).toLocaleString()}</td>
+        <td></td>
+      </tr></tfoot>
+    </table>
+    <div style="margin-top:16px;font-size:10px;color:#8C7060;text-align:right">지급 확인: _______________ (인)</div>`;
+  printDoc('이체명세서', html);
 }
 
 // ═══════════════════════════════════════
