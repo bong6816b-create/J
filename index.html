@@ -21,6 +21,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
 <style>
 :root{
   --br:#2C1810;--br2:#3D2314;--cara:#7B4A2D;--latte:#B07A5A;
@@ -370,7 +371,11 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
       <input class="login-inp" id="auth-name" type="text" placeholder="이름 (현장소장명)">
     </div>
     <button class="login-btn" id="auth-btn" onclick="doAuth()">로그인</button>
+    <div id="login-reset-wrap" style="text-align:center;margin-top:10px">
+      <button onclick="doResetPw()" style="background:none;border:none;color:rgba(255,248,238,.55);font-size:12px;cursor:pointer;text-decoration:underline;font-family:var(--sans)">비밀번호를 잊으셨나요?</button>
+    </div>
     <div class="login-err" id="auth-err"></div>
+    <div id="auth-ok" style="font-size:12px;color:#4ADE80;text-align:center;margin-top:8px;min-height:18px"></div>
   </div>
 </div>
 
@@ -1668,8 +1673,71 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
     <div class="sm-item" onclick="closeMenu();backupData()"><span class="sm-icon">💾</span>전체 데이터 백업</div>
     <div class="sm-item" onclick="closeMenu();g('restore-input').click()"><span class="sm-icon">📥</span>백업 파일 복원</div>
   </div>
+  <div class="sm-sec">
+    <div class="sm-lbl">팀·설정</div>
+    <div class="sm-item" onclick="closeMenu();openTeamModal()"><span class="sm-icon">👥</span>팀 공유 (회사 코드)</div>
+    <div class="sm-item" onclick="closeMenu();requestNotifPerm()"><span class="sm-icon">🔔</span>알림 설정</div>
+    <div class="sm-item" onclick="closeMenu();openPrivacy()"><span class="sm-icon">🔒</span>개인정보처리방침</div>
+  </div>
+  <div style="padding:12px 16px;font-size:10px;color:var(--g3);text-align:center">
+    제이건설 공사일보 v2.0<br>© 2025 J건설. All rights reserved.
+  </div>
 </div>
 <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restoreData(this)">
+
+<!-- 팀 공유 모달 -->
+<div class="modal-bg" id="team-modal" onclick="if(event.target===this)closeTeamModal()">
+  <div style="background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;padding:24px 20px 32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-size:18px;font-weight:900;color:var(--br)">👥 팀 공유</div>
+      <button onclick="closeTeamModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--tx3)">✕</button>
+    </div>
+    <div id="team-status-box" style="background:var(--g1);border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--tx2)">
+      <div id="team-status-txt">팀 정보 로딩 중...</div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:8px">새 팀 만들기</div>
+      <input id="team-name-inp" class="inp" placeholder="팀/회사명 입력" style="margin-bottom:8px">
+      <button class="btn btn-primary" style="width:100%" onclick="createTeam()">팀 생성하기</button>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--g3);margin-bottom:16px">— 또는 —</div>
+    <div>
+      <div style="font-size:12px;font-weight:700;color:var(--tx3);margin-bottom:8px">초대 코드로 팀 참가</div>
+      <input id="team-code-inp" class="inp" placeholder="6자리 초대 코드 입력" maxlength="6" style="text-transform:uppercase;letter-spacing:3px;font-size:18px;font-weight:700;text-align:center;margin-bottom:8px">
+      <button class="btn btn-primary" style="width:100%;background:var(--teal)" onclick="joinTeam()">팀 참가하기</button>
+    </div>
+    <div id="team-err" style="font-size:12px;color:var(--red);text-align:center;margin-top:10px"></div>
+    <div id="team-ok" style="font-size:12px;color:var(--grn);text-align:center;margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- 개인정보처리방침 모달 -->
+<div class="modal-bg" id="privacy-modal" onclick="if(event.target===this)closePrivacy()">
+  <div style="background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;padding:24px 20px 32px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-size:16px;font-weight:900;color:var(--br)">🔒 개인정보처리방침</div>
+      <button onclick="closePrivacy()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--tx3)">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--tx2);line-height:1.8">
+      <p style="font-weight:700;color:var(--br);margin-bottom:6px">제이건설 공사일보 개인정보처리방침</p>
+      <p style="margin-bottom:12px">시행일: 2025년 1월 1일</p>
+      <p style="font-weight:700;margin-bottom:4px">1. 수집하는 개인정보 항목</p>
+      <p style="margin-bottom:12px">이메일 주소, 이름(현장소장명), 현장 근로자 성명 및 직종, 위치 정보(GPS 좌표, 선택적)</p>
+      <p style="font-weight:700;margin-bottom:4px">2. 개인정보 수집·이용 목적</p>
+      <p style="margin-bottom:12px">공사 현장 일보 관리, 근로자 노무비 계산, 안전 점검 기록, 서류 출력 및 공유</p>
+      <p style="font-weight:700;margin-bottom:4px">3. 개인정보 보유 기간</p>
+      <p style="margin-bottom:12px">회원 탈퇴 시까지 (또는 5년, 법정 보존기간 준수)</p>
+      <p style="font-weight:700;margin-bottom:4px">4. 개인정보 제3자 제공</p>
+      <p style="margin-bottom:12px">원칙적으로 제3자에게 개인정보를 제공하지 않습니다. 단, 팀 공유 기능 사용 시 동일 팀원 간에 데이터가 공유됩니다.</p>
+      <p style="font-weight:700;margin-bottom:4px">5. 개인정보 처리 위탁</p>
+      <p style="margin-bottom:12px">Google Firebase (데이터 저장 및 인증)</p>
+      <p style="font-weight:700;margin-bottom:4px">6. 정보주체의 권리</p>
+      <p style="margin-bottom:12px">이용자는 언제든지 자신의 개인정보 조회, 수정, 삭제, 처리 정지를 요청할 수 있습니다. 앱 내 데이터 백업/복원 메뉴에서 직접 관리하거나 이메일로 문의하세요.</p>
+      <p style="font-weight:700;margin-bottom:4px">7. 개인정보 보호책임자</p>
+      <p>제이건설 · 문의: 앱 내 민원 관리 메뉴 활용</p>
+    </div>
+  </div>
+</div>
 
 <!-- CALENDAR MODAL -->
 <div class="modal-bg" id="cal-modal">
@@ -2329,7 +2397,10 @@ function addPhotos(input){
     const r=new FileReader();
     r.onload=async e=>{
       const compressed=await compressImage(e.target.result);
-      S.photos.push(compressed);renderPhotos();
+      const uid=currentUser?currentUser.uid:'local';
+      const path=`photos/${uid}/daily/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+      const url=await uploadPhotoToStorage(compressed,path);
+      S.photos.push(url);renderPhotos();
     };
     r.readAsDataURL(f);
   });
@@ -3146,7 +3217,10 @@ function addGpsPhoto(input){
     const r=new FileReader();
     r.onload=async e=>{
       const compressed=await compressImage(e.target.result,1200,0.75);
-      gpsPhotos.unshift({id:Date.now(),src:compressed,work:sv('gp-work'),loc:sv('gp-loc'),lat:currentGpsCoords.lat,lng:currentGpsCoords.lng,date:toISO(new Date())});
+      const uid=currentUser?currentUser.uid:'local';
+      const path=`photos/${uid}/gps/${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+      const src=await uploadPhotoToStorage(compressed,path);
+      gpsPhotos.unshift({id:Date.now(),src,work:sv('gp-work'),loc:sv('gp-loc'),lat:currentGpsCoords.lat,lng:currentGpsCoords.lng,date:toISO(new Date())});
       try{localStorage.setItem('jc-gps',JSON.stringify(gpsPhotos.slice(0,30)));}
       catch(e){toast('저장 공간 부족. 오래된 GPS 사진을 삭제해주세요','warn');}
       renderGpsPhotos();
@@ -3618,8 +3692,9 @@ const firebaseConfig = {
   appId: "1:966738195485:web:73ae01d15ecb384865c2f4"
 };
 firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db   = firebase.firestore();
+const auth    = firebase.auth();
+const db      = firebase.firestore();
+const storage = firebase.storage();
 
 let currentUser = null;
 const JC_KEYS = ['jc-w','jc-s','jc-d','jc-issues','jc-wt','jc-jt','jc-sc','jc-accidents',
@@ -3666,6 +3741,7 @@ auth.onAuthStateChanged(async user => {
     if (g('sm-username')) g('sm-username').textContent = name;
     if (g('sm-useremail')) g('sm-useremail').textContent = user.email;
     await syncFromCloud();
+    await loadTeamInfo();
     init();
   } else {
     currentUser = null;
@@ -3716,6 +3792,26 @@ async function doAuth() {
   }
 }
 
+// 비밀번호 재설정
+async function doResetPw() {
+  const email = g('auth-email').value.trim();
+  const okEl = g('auth-ok');
+  const errEl = g('auth-err');
+  okEl.textContent = '';
+  errEl.textContent = '';
+  if (!email) { errEl.textContent = '이메일을 먼저 입력하세요'; return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    okEl.textContent = '✅ 재설정 링크를 이메일로 보냈습니다. 받은편지함을 확인하세요.';
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': '등록되지 않은 이메일입니다',
+      'auth/invalid-email': '이메일 형식이 올바르지 않습니다',
+    };
+    errEl.textContent = msgs[e.code] || '오류: ' + e.message;
+  }
+}
+
 // 로그아웃
 async function doLogout() {
   if (!confirm('로그아웃 하시겠어요?')) return;
@@ -3723,6 +3819,142 @@ async function doLogout() {
   closeMenu();
   toast('로그아웃 되었습니다', 'warn');
 }
+
+// ═══════════════════════════════════════
+//  Firebase Storage 사진 업로드
+// ═══════════════════════════════════════
+async function uploadPhotoToStorage(dataUrl, path) {
+  if (!currentUser) return dataUrl;
+  try {
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    const ref = storage.ref(path);
+    await ref.put(blob, { contentType: 'image/jpeg' });
+    return await ref.getDownloadURL();
+  } catch(e) {
+    console.warn('Storage upload failed, using base64 fallback', e);
+    return dataUrl;
+  }
+}
+
+// ═══════════════════════════════════════
+//  팀 공유 (회사 코드 시스템)
+// ═══════════════════════════════════════
+let currentTeamId = null;
+
+async function loadTeamInfo() {
+  if (!currentUser) return;
+  try {
+    const doc = await db.collection('users').doc(currentUser.uid).collection('profile').doc('team').get();
+    if (doc.exists && doc.data().teamId) {
+      currentTeamId = doc.data().teamId;
+      const teamDoc = await db.collection('teams').doc(currentTeamId).get();
+      if (teamDoc.exists) {
+        const info = teamDoc.data();
+        if (g('sm-username')) {
+          const badge = document.querySelector('#sm-team-badge');
+          if (!badge) {
+            const el = document.createElement('div');
+            el.id = 'sm-team-badge';
+            el.style.cssText = 'font-size:9px;background:var(--teal);color:#fff;border-radius:4px;padding:2px 5px;margin-top:3px;display:inline-block';
+            el.textContent = '👥 ' + (info.name || '팀 공유 중');
+            g('sm-username').parentNode.appendChild(el);
+          }
+        }
+      }
+    }
+  } catch(e) { console.warn('Team load failed', e); }
+}
+
+function openTeamModal() {
+  g('team-modal').classList.add('on');
+  g('team-err').textContent = '';
+  g('team-ok').textContent = '';
+  const statusEl = g('team-status-txt');
+  if (currentTeamId) {
+    statusEl.innerHTML = `<strong style="color:var(--teal)">✅ 팀에 참가 중</strong><br>팀 코드: <strong style="letter-spacing:2px">${currentTeamId}</strong><br><small>이 코드를 팀원에게 공유하세요</small><br><br><button class="btn btn-ghost btn-sm" onclick="leaveTeam()" style="margin-top:6px">팀 나가기</button>`;
+  } else {
+    statusEl.textContent = '현재 개인 계정으로 사용 중입니다. 팀을 만들거나 초대 코드로 참가하세요.';
+  }
+}
+
+function closeTeamModal() { g('team-modal').classList.remove('on'); }
+
+async function createTeam() {
+  const name = g('team-name-inp').value.trim();
+  if (!name) { g('team-err').textContent = '팀/회사명을 입력하세요'; return; }
+  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  try {
+    await db.collection('teams').doc(code).set({ name, owner: currentUser.uid, created: Date.now() });
+    await db.collection('users').doc(currentUser.uid).collection('profile').doc('team').set({ teamId: code });
+    currentTeamId = code;
+    g('team-ok').textContent = `✅ 팀 생성 완료! 초대 코드: ${code}`;
+    g('team-err').textContent = '';
+    toast(`팀 생성 완료! 코드: ${code}`, 'ok');
+    openTeamModal();
+  } catch(e) { g('team-err').textContent = '오류: ' + e.message; }
+}
+
+async function joinTeam() {
+  const code = g('team-code-inp').value.trim().toUpperCase();
+  if (code.length !== 6) { g('team-err').textContent = '6자리 코드를 입력하세요'; return; }
+  try {
+    const teamDoc = await db.collection('teams').doc(code).get();
+    if (!teamDoc.exists) { g('team-err').textContent = '존재하지 않는 팀 코드입니다'; return; }
+    await db.collection('users').doc(currentUser.uid).collection('profile').doc('team').set({ teamId: code });
+    currentTeamId = code;
+    g('team-ok').textContent = `✅ 팀 참가 완료! (${teamDoc.data().name})`;
+    g('team-err').textContent = '';
+    toast(`팀 "${teamDoc.data().name}" 참가 완료!`, 'ok');
+    await loadTeamInfo();
+    openTeamModal();
+  } catch(e) { g('team-err').textContent = '오류: ' + e.message; }
+}
+
+async function leaveTeam() {
+  if (!confirm('팀을 나가시겠습니까?')) return;
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('profile').doc('team').delete();
+    currentTeamId = null;
+    const badge = document.querySelector('#sm-team-badge');
+    if (badge) badge.remove();
+    toast('팀에서 나왔습니다', 'warn');
+    closeTeamModal();
+  } catch(e) { toast('오류: ' + e.message, 'warn'); }
+}
+
+// ═══════════════════════════════════════
+//  Web Push 알림 설정
+// ═══════════════════════════════════════
+async function requestNotifPerm() {
+  if (!('Notification' in window)) {
+    toast('이 브라우저는 알림을 지원하지 않습니다', 'warn');
+    return;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    toast('✅ 알림이 활성화되었습니다!', 'ok');
+    localStorage.setItem('jc-notif', '1');
+    new Notification('제이건설 공사일보', {
+      body: '알림이 정상적으로 설정되었습니다.',
+      icon: './icon-192.png'
+    });
+  } else {
+    toast('알림 권한이 거부되었습니다. 브라우저 설정에서 허용해주세요.', 'warn');
+  }
+}
+
+function sendLocalNotif(title, body) {
+  if (Notification.permission === 'granted') {
+    new Notification(title, { body, icon: './icon-192.png' });
+  }
+}
+
+// ═══════════════════════════════════════
+//  개인정보처리방침 모달
+// ═══════════════════════════════════════
+function openPrivacy() { g('privacy-modal').classList.add('on'); }
+function closePrivacy() { g('privacy-modal').classList.remove('on'); }
 
 // ═══════════════════════════════════════
 //  공제내역서 PDF
