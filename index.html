@@ -372,19 +372,60 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
       <input class="login-inp" id="auth-name" type="text" placeholder="이름 (현장소장명)" autocomplete="name">
       <input class="login-inp" id="auth-company" type="text" placeholder="회사명 (예: 제이건설)">
       <input class="login-inp" id="auth-bizno" type="text" placeholder="사업자번호 (선택, 000-00-00000)" maxlength="12" oninput="this.value=this.value.replace(/[^0-9]/g,'').replace(/(\d{3})(\d{2})(\d{5})/,'$1-$2-$3')">
-      <div style="margin:12px 0 4px;display:flex;flex-direction:column;gap:10px">
-        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-          <input type="checkbox" id="agree-terms" style="margin-top:2px;flex-shrink:0;accent-color:#F5C842;width:16px;height:16px">
-          <span style="font-size:11px;color:rgba(255,248,238,.75);line-height:1.5">[필수] <button onclick="openTerms()" style="background:none;border:none;color:#F5C842;font-size:11px;cursor:pointer;text-decoration:underline;font-family:var(--sans);padding:0">서비스 이용약관</button>에 동의합니다</span>
+      <!-- 약관 동의 박스 -->
+      <div style="margin:14px 0 4px;background:rgba(0,0,0,.2);border-radius:12px;overflow:hidden;border:1px solid rgba(255,248,238,.1)">
+        <!-- 전체 동의 -->
+        <label style="display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;border-bottom:1px solid rgba(255,248,238,.1)" onclick="toggleAllAgree()">
+          <div id="all-agree-box" style="width:20px;height:20px;border-radius:6px;border:2px solid rgba(255,248,238,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s">
+            <span id="all-agree-check" style="color:#2C1810;font-size:13px;font-weight:900;display:none">✓</span>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:var(--cream)">전체 동의</span>
+          <span style="font-size:10px;color:rgba(255,248,238,.4);margin-left:auto">선택 포함</span>
         </label>
-        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-          <input type="checkbox" id="agree-privacy" style="margin-top:2px;flex-shrink:0;accent-color:#F5C842;width:16px;height:16px">
-          <span style="font-size:11px;color:rgba(255,248,238,.75);line-height:1.5">[필수] <button onclick="openPrivacy()" style="background:none;border:none;color:#F5C842;font-size:11px;cursor:pointer;text-decoration:underline;font-family:var(--sans);padding:0">개인정보처리방침</button>에 동의합니다</span>
-        </label>
-        <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer">
-          <input type="checkbox" id="agree-marketing" style="margin-top:2px;flex-shrink:0;accent-color:#F5C842;width:16px;height:16px">
-          <span style="font-size:11px;color:rgba(255,248,238,.5);line-height:1.5">[선택] 앱 업데이트 및 마케팅 정보 수신에 동의합니다</span>
-        </label>
+        <!-- 개별 동의 항목들 -->
+        <div style="display:flex;flex-direction:column">
+          <!-- 만 14세 이상 -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,248,238,.07)">
+            <input type="checkbox" id="agree-age" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.8);flex:1">[필수] 만 14세 이상입니다</span>
+          </div>
+          <!-- 서비스 이용약관 -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,248,238,.07)">
+            <input type="checkbox" id="agree-terms" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.8);flex:1">[필수] 서비스 이용약관</span>
+            <button onclick="openTerms()" style="background:none;border:1px solid rgba(255,248,238,.2);color:rgba(255,248,238,.5);font-size:10px;padding:3px 7px;border-radius:5px;cursor:pointer;font-family:var(--sans);flex-shrink:0">보기</button>
+          </div>
+          <!-- 개인정보처리방침 -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,248,238,.07)">
+            <input type="checkbox" id="agree-privacy" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.8);flex:1">[필수] 개인정보처리방침</span>
+            <button onclick="openPrivacy()" style="background:none;border:1px solid rgba(255,248,238,.2);color:rgba(255,248,238,.5);font-size:10px;padding:3px 7px;border-radius:5px;cursor:pointer;font-family:var(--sans);flex-shrink:0">보기</button>
+          </div>
+          <!-- 개인정보 수집·이용 동의 -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,248,238,.07)">
+            <input type="checkbox" id="agree-collect" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.8);flex:1">[필수] 개인정보 수집·이용 동의</span>
+            <button onclick="openAgreeModal('collect')" style="background:none;border:1px solid rgba(255,248,238,.2);color:rgba(255,248,238,.5);font-size:10px;padding:3px 7px;border-radius:5px;cursor:pointer;font-family:var(--sans);flex-shrink:0">보기</button>
+          </div>
+          <!-- 위치정보 수집·이용 동의 -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,248,238,.07)">
+            <input type="checkbox" id="agree-location" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.8);flex:1">[필수] 위치정보 수집·이용 동의</span>
+            <button onclick="openAgreeModal('location')" style="background:none;border:1px solid rgba(255,248,238,.2);color:rgba(255,248,238,.5);font-size:10px;padding:3px 7px;border-radius:5px;cursor:pointer;font-family:var(--sans);flex-shrink:0">보기</button>
+          </div>
+          <!-- 제3자 개인정보 제공 동의 -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:1px solid rgba(255,248,238,.07)">
+            <input type="checkbox" id="agree-3rd" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.8);flex:1">[필수] 제3자 개인정보 제공 동의</span>
+            <button onclick="openAgreeModal('3rd')" style="background:none;border:1px solid rgba(255,248,238,.2);color:rgba(255,248,238,.5);font-size:10px;padding:3px 7px;border-radius:5px;cursor:pointer;font-family:var(--sans);flex-shrink:0">보기</button>
+          </div>
+          <!-- 마케팅 동의 (선택) -->
+          <div style="display:flex;align-items:center;gap:10px;padding:11px 14px">
+            <input type="checkbox" id="agree-marketing" class="agree-cb" style="width:16px;height:16px;flex-shrink:0;accent-color:#F5C842" onchange="syncAllAgree()">
+            <span style="font-size:11px;color:rgba(255,248,238,.5);flex:1">[선택] 마케팅 정보 수신 동의</span>
+            <button onclick="openAgreeModal('marketing')" style="background:none;border:1px solid rgba(255,248,238,.15);color:rgba(255,248,238,.35);font-size:10px;padding:3px 7px;border-radius:5px;cursor:pointer;font-family:var(--sans);flex-shrink:0">보기</button>
+          </div>
+        </div>
       </div>
     </div>
     <button class="login-btn" id="auth-btn" onclick="doAuth()">로그인</button>
@@ -1773,6 +1814,20 @@ header{flex-shrink:0;height:56px;background:var(--br);display:flex;align-items:c
     </div>
     <div id="team-err" style="font-size:12px;color:var(--red);text-align:center;margin-top:10px"></div>
     <div id="team-ok" style="font-size:12px;color:var(--grn);text-align:center;margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- 범용 약관 내용 모달 -->
+<div class="modal-bg" id="agree-modal" onclick="if(event.target===this)closeAgreeModal()">
+  <div style="background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:480px;max-height:82vh;display:flex;flex-direction:column">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 20px 14px;border-bottom:1px solid var(--g1);flex-shrink:0">
+      <div style="font-size:15px;font-weight:900;color:var(--br)" id="agree-modal-title">약관 내용</div>
+      <button onclick="closeAgreeModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--tx3)">✕</button>
+    </div>
+    <div id="agree-modal-body" style="overflow-y:auto;padding:16px 20px;font-size:12px;color:var(--tx2);line-height:1.8;flex:1"></div>
+    <div style="padding:14px 20px 24px;flex-shrink:0">
+      <button onclick="agreeAndClose()" style="width:100%;padding:14px;background:var(--br);border:none;border-radius:10px;font-size:14px;font-weight:700;color:var(--cream);cursor:pointer;font-family:var(--sans)">동의하고 닫기</button>
+    </div>
   </div>
 </div>
 
@@ -3924,8 +3979,12 @@ async function doAuth() {
   // 회원가입 유효성 검사
   if (authMode === 'signup') {
     if (!g('auth-name').value.trim()) { err.textContent = '이름을 입력하세요'; return; }
-    if (!g('agree-terms').checked) { err.textContent = '[필수] 서비스 이용약관에 동의해주세요'; return; }
-    if (!g('agree-privacy').checked) { err.textContent = '[필수] 개인정보처리방침에 동의해주세요'; return; }
+    if (!g('agree-age').checked)      { err.textContent = '[필수] 만 14세 이상임을 확인해주세요'; return; }
+    if (!g('agree-terms').checked)    { err.textContent = '[필수] 서비스 이용약관에 동의해주세요'; return; }
+    if (!g('agree-privacy').checked)  { err.textContent = '[필수] 개인정보처리방침에 동의해주세요'; return; }
+    if (!g('agree-collect').checked)  { err.textContent = '[필수] 개인정보 수집·이용에 동의해주세요'; return; }
+    if (!g('agree-location').checked) { err.textContent = '[필수] 위치정보 수집·이용에 동의해주세요'; return; }
+    if (!g('agree-3rd').checked)      { err.textContent = '[필수] 제3자 개인정보 제공에 동의해주세요'; return; }
   }
   const btn = g('auth-btn');
   btn.textContent = '처리중...'; btn.disabled = true;
@@ -3940,8 +3999,16 @@ async function doAuth() {
       const cred = await auth.createUserWithEmailAndPassword(email, pw);
       await cred.user.updateProfile({ displayName: name });
       // Firestore에 프로필 저장
+      const agreeTs = Date.now();
       await db.collection('users').doc(cred.user.uid).collection('profile').doc('info').set({
-        name, company, bizno, marketing, created: Date.now(), email
+        name, company, bizno, email, created: agreeTs,
+      });
+      // 법적 동의 기록 저장 (타임스탬프 포함)
+      await db.collection('users').doc(cred.user.uid).collection('profile').doc('consent').set({
+        terms: agreeTs, privacy: agreeTs, collect: agreeTs,
+        location: agreeTs, thirdParty: agreeTs,
+        marketing: g('agree-marketing').checked ? agreeTs : null,
+        ip: '', ua: navigator.userAgent, version: '1.0'
       });
       // 이메일 인증 발송
       await cred.user.sendEmailVerification();
@@ -4173,6 +4240,121 @@ function sendLocalNotif(title, body) {
   if (Notification.permission === 'granted') {
     new Notification(title, { body, icon: './icon-192.png' });
   }
+}
+
+// ═══════════════════════════════════════
+//  약관 동의 - 전체 동의 토글
+// ═══════════════════════════════════════
+function toggleAllAgree() {
+  const cbs = document.querySelectorAll('.agree-cb');
+  const allChecked = [...cbs].every(cb => cb.checked);
+  cbs.forEach(cb => cb.checked = !allChecked);
+  updateAllAgreeUI(!allChecked);
+}
+
+function syncAllAgree() {
+  const cbs = document.querySelectorAll('.agree-cb');
+  const allChecked = [...cbs].every(cb => cb.checked);
+  updateAllAgreeUI(allChecked);
+}
+
+function updateAllAgreeUI(checked) {
+  const box   = g('all-agree-box');
+  const check = g('all-agree-check');
+  if (!box) return;
+  if (checked) {
+    box.style.background   = '#F5C842';
+    box.style.borderColor  = '#F5C842';
+    check.style.display    = 'block';
+  } else {
+    box.style.background   = 'transparent';
+    box.style.borderColor  = 'rgba(255,248,238,.3)';
+    check.style.display    = 'none';
+  }
+}
+
+// ═══════════════════════════════════════
+//  범용 약관 내용 모달
+// ═══════════════════════════════════════
+const AGREE_CONTENTS = {
+  collect: {
+    title: '개인정보 수집·이용 동의',
+    cbId: 'agree-collect',
+    body: `<p style="font-weight:700;color:var(--br);margin-bottom:10px">개인정보 수집·이용에 관한 동의</p>
+<p style="margin-bottom:14px">제이건설 공사일보는 다음과 같이 개인정보를 수집·이용합니다.</p>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">
+<tr style="background:#F5F0EA"><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">수집 항목</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">수집 목적</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">보유 기간</th></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">이메일, 이름</td><td style="padding:7px 8px;border:1px solid #C8B8A8">회원 식별 및 로그인</td><td style="padding:7px 8px;border:1px solid #C8B8A8">회원 탈퇴 시까지</td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">회사명, 사업자번호</td><td style="padding:7px 8px;border:1px solid #C8B8A8">서비스 맞춤 제공</td><td style="padding:7px 8px;border:1px solid #C8B8A8">회원 탈퇴 시까지</td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">근로자 성명·직종</td><td style="padding:7px 8px;border:1px solid #C8B8A8">공사일보 작성·노무비 계산</td><td style="padding:7px 8px;border:1px solid #C8B8A8">5년 (법정 보존기간)</td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">현장사진</td><td style="padding:7px 8px;border:1px solid #C8B8A8">공사 현황 기록</td><td style="padding:7px 8px;border:1px solid #C8B8A8">회원 탈퇴 시까지</td></tr>
+</table>
+<p style="font-size:11px;color:var(--tx3)">※ 동의를 거부할 권리가 있으나, 거부 시 서비스 이용이 불가합니다.</p>`
+  },
+  location: {
+    title: '위치정보 수집·이용 동의',
+    cbId: 'agree-location',
+    body: `<p style="font-weight:700;color:var(--br);margin-bottom:10px">위치정보 수집·이용에 관한 동의</p>
+<p style="margin-bottom:14px">제이건설 공사일보는 다음 목적으로 위치정보를 수집·이용합니다.</p>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">
+<tr style="background:#F5F0EA"><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">수집 항목</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">수집 목적</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">보유 기간</th></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">GPS 좌표 (위도·경도)</td><td style="padding:7px 8px;border:1px solid #C8B8A8">GPS 사진 태깅, 현장 위치 기록</td><td style="padding:7px 8px;border:1px solid #C8B8A8">5년 (법정 보존기간)</td></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">날씨 정보</td><td style="padding:7px 8px;border:1px solid #C8B8A8">현재 위치 날씨 표시</td><td style="padding:7px 8px;border:1px solid #C8B8A8">저장하지 않음</td></tr>
+</table>
+<p style="margin-bottom:8px;font-size:11px"><strong>위치정보 수집 방식:</strong> 이용자가 GPS 사진 기능 사용 시에만 수집됩니다.</p>
+<p style="margin-bottom:8px;font-size:11px"><strong>위치정보 제3자 제공:</strong> 원칙적으로 제3자에게 제공하지 않습니다.</p>
+<p style="font-size:11px;color:var(--tx3)">※ 위치정보 수집에 동의하지 않아도 GPS 기능을 제외한 서비스는 이용 가능합니다.</p>`
+  },
+  '3rd': {
+    title: '제3자 개인정보 제공 동의',
+    cbId: 'agree-3rd',
+    body: `<p style="font-weight:700;color:var(--br);margin-bottom:10px">제3자 개인정보 제공에 관한 동의</p>
+<p style="margin-bottom:14px">제이건설 공사일보는 서비스 운영을 위해 다음과 같이 개인정보를 제3자에게 제공합니다.</p>
+<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">
+<tr style="background:#F5F0EA"><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">제공받는 자</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">제공 항목</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">이용 목적</th><th style="padding:7px 8px;border:1px solid #C8B8A8;text-align:left">보유 기간</th></tr>
+<tr><td style="padding:7px 8px;border:1px solid #C8B8A8">Google Firebase</td><td style="padding:7px 8px;border:1px solid #C8B8A8">이메일, 이름, 데이터</td><td style="padding:7px 8px;border:1px solid #C8B8A8">인증·데이터 저장</td><td style="padding:7px 8px;border:1px solid #C8B8A8">회원 탈퇴 시까지</td></tr>
+</table>
+<p style="margin-bottom:8px;font-size:11px">Google Firebase의 개인정보처리방침: <span style="color:var(--teal)">firebase.google.com/support/privacy</span></p>
+<p style="font-size:11px;color:var(--tx3)">※ 동의를 거부할 권리가 있으나, 거부 시 서비스 이용이 불가합니다.</p>`
+  },
+  marketing: {
+    title: '마케팅 정보 수신 동의 (선택)',
+    cbId: 'agree-marketing',
+    body: `<p style="font-weight:700;color:var(--br);margin-bottom:10px">마케팅 정보 수신에 관한 동의 (선택)</p>
+<p style="margin-bottom:14px">다음과 같은 마케팅 정보를 수신하실 수 있습니다. 동의하지 않아도 서비스 이용에 불이익이 없습니다.</p>
+<ul style="font-size:12px;line-height:2;padding-left:16px;margin-bottom:14px">
+  <li>앱 신규 기능 업데이트 안내</li>
+  <li>건설 현장 관련 법령 변경 알림</li>
+  <li>서비스 이용 팁 및 활용 가이드</li>
+  <li>이벤트 및 프로모션 안내</li>
+</ul>
+<p style="margin-bottom:8px;font-size:11px"><strong>수신 채널:</strong> 이메일</p>
+<p style="font-size:11px;color:var(--tx3)">※ 수신 동의 후에도 언제든지 앱 설정에서 수신 거부 가능합니다.</p>`
+  }
+};
+
+let currentAgreeModalCbId = null;
+
+function openAgreeModal(type) {
+  const content = AGREE_CONTENTS[type];
+  if (!content) return;
+  currentAgreeModalCbId = content.cbId;
+  g('agree-modal-title').textContent = content.title;
+  g('agree-modal-body').innerHTML = content.body;
+  g('agree-modal').classList.add('on');
+}
+
+function closeAgreeModal() {
+  g('agree-modal').classList.remove('on');
+  currentAgreeModalCbId = null;
+}
+
+function agreeAndClose() {
+  if (currentAgreeModalCbId) {
+    const cb = g(currentAgreeModalCbId);
+    if (cb) { cb.checked = true; syncAllAgree(); }
+  }
+  closeAgreeModal();
 }
 
 // ═══════════════════════════════════════
